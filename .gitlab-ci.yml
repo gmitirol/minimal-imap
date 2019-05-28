@@ -1,0 +1,86 @@
+before_script:
+  - cp $CI_SERVER_TLS_CA_FILE /usr/local/share/ca-certificates/
+  - update-ca-certificates
+
+cache: &cache
+  untracked: false
+
+.tags-defaults-docker: &tags-defaults-docker
+  - shared
+
+variables:
+  TEMP_IMAGE: ci-build/$CI_PROJECT_PATH:$CI_PIPELINE_ID
+  TEMP_IMAGE_PATH: build/image.tar
+  VERSION_TOOL_REPOSITORY: https://github.com/xelan/bash-version-tool.git
+
+stages:
+  - build
+  - test
+  - release
+
+build:
+  stage: build
+  image: docker:latest
+  cache:
+    <<: *cache
+  artifacts:
+    expire_in: 1 hour
+    paths:
+      - $TEMP_IMAGE_PATH
+  services:
+    - name: $CI_REGISTRY/docker/dind:latest
+      alias: docker
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build --tag $TEMP_IMAGE . --build-arg REGISTRY_PATH=$CI_REGISTRY/docker
+    - mkdir -p build
+    - docker save --output $TEMP_IMAGE_PATH $TEMP_IMAGE
+  tags: *tags-defaults-docker
+
+test:
+  stage: test
+  image: docker:latest
+  services:
+    - name: $CI_REGISTRY/docker/dind:latest
+      alias: docker
+  variables:
+    IMAP_HOST: 'localhost'
+    IMAP_USERS: 'user1:pass1 user2:pass2'
+  script:
+    - docker load --input $TEMP_IMAGE_PATH --quiet
+    - CONTAINER=$(docker run -d -e IMAP_USERS $TEMP_IMAGE)
+    - sleep 3
+    - docker exec $CONTAINER dovecot --version
+    - docker exec $CONTAINER nc -w 5 -vv -z "$IMAP_HOST" 143
+    - docker exec $CONTAINER sh -c "echo -e 'A101 LOGIN user1 pass1' | nc -v $IMAP_HOST 143"
+    - docker exec $CONTAINER sh -c "echo -e 'A101 LOGIN user2 pass2' | nc -v $IMAP_HOST 143"
+    - docker exec $CONTAINER sh -c "echo -e 'A101 LOGIN user1 pass1\nA102 LIST INBOX \"*\"' | nc -v $IMAP_HOST 143"
+    - docker exec $CONTAINER sh -c "echo -e 'A101 LOGIN user2 pass2\nA102 LIST INBOX \"*\"' | nc -v $IMAP_HOST 143"
+    - docker kill $CONTAINER
+  tags: *tags-defaults-docker
+
+release:
+  stage: release
+  image: docker:latest
+  services:
+    - name: $CI_REGISTRY/docker/dind:latest
+      alias: docker
+  only:
+    - /^[0-9]+\.[0-9]+\.[0-9]$/
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker load --input $TEMP_IMAGE_PATH --quiet
+    - docker tag $TEMP_IMAGE $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+    - apk add --no-cache bash git;
+      git clone "$VERSION_TOOL_REPOSITORY" /tmp/version;
+      VERSIONS="$(git tag --list)";
+      MAJOR=$(bash /tmp/version/version.sh $CI_COMMIT_REF_NAME MAJOR);
+      if [ -z "$VERSIONS" ] || [ $(bash /tmp/version/versionhighest.sh "$VERSIONS" $CI_COMMIT_REF_NAME) == 'YES' ]; then
+        docker tag $TEMP_IMAGE $CI_REGISTRY_IMAGE:latest;
+      fi;
+      VERSIONS_MAJOR=$(echo "$VERSIONS" | grep -E "^$MAJOR\." || echo '');
+      if [ -z "$VERSIONS_MAJOR" ] || [ $(bash /tmp/version/versionhighest.sh "$VERSIONS_MAJOR" $CI_COMMIT_REF_NAME) == 'YES' ]; then
+        docker tag $TEMP_IMAGE $CI_REGISTRY_IMAGE:v$MAJOR;
+      fi;
+    - docker push $CI_REGISTRY_IMAGE
+  tags: *tags-defaults-docker

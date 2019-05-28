@@ -1,0 +1,20 @@
+.git/
+.gitlab-ci.yml
+.gitignore
+
+# -- temp
+*.tmp
+*.patch
+*.log*
+*.swo
+*.swp
+*.bak
+*.DS_Store
+*~
+
+# local settings or data
+local/
+*_local.*
+
+# -- Build data
+build/
