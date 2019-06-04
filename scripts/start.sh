@@ -20,8 +20,10 @@ for USER in $IMAP_USERS; do
     echo "Creating user $USERNAME...";
     adduser -D "$USERNAME";
     echo "$USERNAME:$PASSWORD" | chpasswd;
-    mkdir "/home/$USERNAME/Maildir";
-    chown "$USERNAME" "/home/$USERNAME/Maildir";
+    if [ ! -d "/home/$USERNAME/Maildir" ]; then
+        mkdir "/home/$USERNAME/Maildir";
+        chown "$USERNAME" "/home/$USERNAME/Maildir";
+    fi;
 done;
 
 exec dovecot -F;
