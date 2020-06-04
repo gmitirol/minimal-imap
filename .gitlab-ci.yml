@@ -20,7 +20,7 @@ stages:
 
 build:
   stage: build
-  image: docker:latest
+  image: $CI_REGISTRY/docker/docker:latest
   cache:
     <<: *cache
   artifacts:
@@ -28,7 +28,7 @@ build:
     paths:
       - $TEMP_IMAGE_PATH
   services:
-    - name: $CI_REGISTRY/docker/dind:latest
+    - name: $CI_REGISTRY/docker/docker:dind
       alias: docker
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
@@ -39,9 +39,9 @@ build:
 
 test:
   stage: test
-  image: docker:latest
+  image: $CI_REGISTRY/docker/docker:latest
   services:
-    - name: $CI_REGISTRY/docker/dind:latest
+    - name: $CI_REGISTRY/docker/docker:dind
       alias: docker
   variables:
     IMAP_HOST: 'localhost'
@@ -61,9 +61,9 @@ test:
 
 release:
   stage: release
-  image: docker:latest
+  image: $CI_REGISTRY/docker/docker:latest
   services:
-    - name: $CI_REGISTRY/docker/dind:latest
+    - name: $CI_REGISTRY/docker/docker:dind
       alias: docker
   only:
     - /^[0-9]+\.[0-9]+\.[0-9]$/
