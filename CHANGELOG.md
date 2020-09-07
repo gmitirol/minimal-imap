@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.0] - 2020-09-07
+- Update Alpine base image
+
+## [1.2.0] - 2020-06-04
+- Update Alpine base image
+- Adapt base image link in readme
+- Use new docker repo for CI build
+
 ## [1.1.0] - 2019-09-18
 - Update Alpine base image
 - Add changelog
@@ -16,6 +24,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## 1.0.0 - 2019-05-28
 - Initial public release
 
-[Unreleased]:  https://github.com/gmitirol/minimal-imap/compare/1.1.0...HEAD
+[Unreleased]:  https://github.com/gmitirol/minimal-imap/compare/1.3.0...HEAD
+[1.3.0]: https://github.com/gmitirol/minimal-imap/compare/1.2.0...1.3.0
+[1.2.0]: https://github.com/gmitirol/minimal-imap/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/gmitirol/minimal-imap/compare/1.0.1...1.1.0
 [1.0.1]: https://github.com/gmitirol/minimal-imap/compare/1.0.0...1.0.1
