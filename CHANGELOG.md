@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.1] - 2020-12-16
+- Update Alpine base image
+- Use tagged versions of docker and dind, use new --all-tags parameter
+
 ## [1.3.0] - 2020-09-07
 - Update Alpine base image
 
@@ -24,7 +28,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## 1.0.0 - 2019-05-28
 - Initial public release
 
-[Unreleased]:  https://github.com/gmitirol/minimal-imap/compare/1.3.0...HEAD
+[Unreleased]:  https://github.com/gmitirol/minimal-imap/compare/1.3.1...HEAD
+[1.3.1]: https://github.com/gmitirol/minimal-imap/compare/1.3.0...1.3.1
 [1.3.0]: https://github.com/gmitirol/minimal-imap/compare/1.2.0...1.3.0
 [1.2.0]: https://github.com/gmitirol/minimal-imap/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/gmitirol/minimal-imap/compare/1.0.1...1.1.0
